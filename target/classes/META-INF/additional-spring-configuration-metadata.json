@@ -1,0 +1,28 @@
+{
+  "properties": [
+    {
+      "name": "bruteforce.url",
+      "type": "java.lang.String",
+      "description": "Description for bruteforce.url."
+    },
+    {
+      "name": "bruteforce.symbols",
+      "type": "java.lang.String",
+      "description": "Description for bruteforce.requests."
+    },
+    {
+      "name": "bruteforce.max",
+      "type": "java.lang.String",
+      "description": "Description for bruteforce.max."
+    },
+    {
+      "name": "bruteforce.user",
+      "type": "java.lang.String",
+      "description": "Description for bruteforce.user."
+    },
+    {
+      "name": "bruteforce.requests-per",
+      "type": "java.lang.String",
+      "description": "Description for bruteforce.requests-per."
+    }
+  ] }
