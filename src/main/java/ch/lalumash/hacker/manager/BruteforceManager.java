@@ -2,6 +2,7 @@ package ch.lalumash.hacker.manager;
 
 import ch.lalumash.core.LoginDto;
 import ch.lalumash.core.LoginResponseDto;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -11,10 +12,14 @@ import java.util.HashSet;
 
 public class BruteforceManager {
     private final String url;
-    private final String symbols;
-    private final String max;
-    private final String user;
-    private final String dtosPerRequest;
+    @Setter
+    private String symbols;
+    @Setter
+    private String max;
+    @Setter
+    private String user;
+    @Setter
+    private String dtosPerRequest;
 
     private HashSet<LoginDto> comb = new HashSet<>();
     private long totalCount = 0;
