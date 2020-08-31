@@ -1,5 +1,6 @@
 package ch.lalumash.hacker.controllers;
 
+import ch.lalumash.core.Config;
 import ch.lalumash.hacker.manager.BruteforceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,22 +22,32 @@ public class BruteforceController {
     }
     @GetMapping("/user/{user}")
     public String setUser(@PathVariable String user) {
-        bruteforceManager.setUser(user);
+        bruteforceManager.getConfig().setUser(user);
         return user;
     }
     @GetMapping("/dtos/{dtosPerRequest}")
     public String setDtosPerRequests(@PathVariable String dtosPerRequest) {
-        bruteforceManager.setDtosPerRequest(dtosPerRequest);
+        bruteforceManager.getConfig().setDtosPerRequest(dtosPerRequest);
         return dtosPerRequest;
     }
     @GetMapping("/symbols/{symbols}")
     public String setSymbols(@PathVariable String symbols) {
-        bruteforceManager.setSymbols(symbols);
+        bruteforceManager.getConfig().setSymbols(symbols);
         return symbols;
     }
     @GetMapping("/max/{max}")
     public String setMax(@PathVariable String max) {
-        bruteforceManager.setMax(max);
+        bruteforceManager.getConfig().setMax(max);
         return max;
+    }
+    @GetMapping("/url/{url}")
+    public String setUrl(@PathVariable String url) {
+        bruteforceManager.getConfig().setUrl("http://" + url + ":8080/login/m");
+        return url;
+    }
+
+    @GetMapping("/info/")
+    public Config getInfo() {
+        return bruteforceManager.getConfig();
     }
 }

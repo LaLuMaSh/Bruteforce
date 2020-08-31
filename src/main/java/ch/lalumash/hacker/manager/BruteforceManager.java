@@ -1,7 +1,9 @@
 package ch.lalumash.hacker.manager;
 
+import ch.lalumash.core.Config;
 import ch.lalumash.core.LoginDto;
 import ch.lalumash.core.LoginResponseDto;
+import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -11,33 +13,26 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashSet;
 
 public class BruteforceManager {
-    private final String url;
-    @Setter
-    private String symbols;
-    @Setter
-    private String max;
-    @Setter
-    private String user;
-    @Setter
-    private String dtosPerRequest;
-
     private HashSet<LoginDto> comb = new HashSet<>();
     private long totalCount = 0;
+    @Getter
+    private final Config config;
 
     @Autowired
     public BruteforceManager(Environment environment) {
-        url = environment.getProperty("bruteforce.url");
-        symbols = environment.getProperty("bruteforce.symbols");
-        max = environment.getProperty("bruteforce.max");
-        user = environment.getProperty("bruteforce.user");
-        dtosPerRequest = environment.getProperty("bruteforce.requests-per");
+        config = new Config();
+        config.setUrl(environment.getProperty("bruteforce.url"));
+        config.setSymbols(environment.getProperty("bruteforce.symbols"));
+        config.setMax(environment.getProperty("bruteforce.max"));
+        config.setUser(environment.getProperty("bruteforce.user"));
+        config.setDtosPerRequest(environment.getProperty("bruteforce.requests-per"));
     }
 
     public String bruteforce() {
         totalCount = 0;
         comb = new HashSet<>();
 
-        String res = genAll(symbols.toCharArray(), Integer.parseInt(max));
+        String res = genAll(this.config.getSymbols().toCharArray(), Integer.parseInt(this.config.getMax()));
         if (res != null) {
             return res;
         }
@@ -59,7 +54,7 @@ public class BruteforceManager {
     private String sendRequests() {
         try {
             System.out.println("sending request with " + comb.size() + " login data.");
-            LoginResponseDto lgu = new RestTemplate().postForObject(url, comb, LoginResponseDto.class);
+            LoginResponseDto lgu = new RestTemplate().postForObject(this.config.getUrl(), comb, LoginResponseDto.class);
             assert lgu != null;
             return lgu.getToken();
         } catch (HttpStatusCodeException ignored) {
@@ -88,9 +83,9 @@ public class BruteforceManager {
                               String prefix,
                               int n, int k) {
         if (k == 0) {
-            comb.add(new LoginDto(this.user, prefix));
+            comb.add(new LoginDto(this.config.getUser(), prefix));
             totalCount++;
-            if (comb.size() >= Integer.parseInt(dtosPerRequest)) {
+            if (comb.size() >= Integer.parseInt(this.config.getDtosPerRequest())) {
                 return send();
             }
             return null;
