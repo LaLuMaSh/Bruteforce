@@ -1,9 +1,5 @@
 package ch.lalumash.core;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.io.Serializable;
 
 public class Config implements Serializable {

@@ -15,7 +15,11 @@ import java.util.HashSet;
 public class BruteforceManager {
     private HashSet<LoginDto> comb = new HashSet<>();
     private long totalCount = 0;
-    @Getter
+
+    public Config getConfig() {
+        return config;
+    }
+
     private final Config config;
 
     @Autowired
